@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This script runs make in a docker container, so that you don't need to install
+# the build tools on your host machine. It will mount the current directory as
+# /app in the container, and run make from there.
+
 set -euo pipefail
 IFS=$'\t\n'
 
@@ -35,7 +39,7 @@ main() {
   image_name="yoga-wasm-build-tools:latest"
 
   # build the image
-  docker_ build -t "${image_name}" .
+  docker_ build -t "${image_name}" "${current_dir}"
 
   # run the image, mounting the current directory as /app
   docker_ run --rm -u "$(id -u):$(id -g)" -v "${current_dir}:/app" -w "/app" "${image_name}" make "$@"
