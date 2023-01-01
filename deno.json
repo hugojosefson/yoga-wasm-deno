@@ -1,0 +1,23 @@
+{
+  "fmt": {
+    "files": {
+      "exclude": [
+        "build"
+      ]
+    }
+  },
+  "lint": {
+    "files": {
+      "exclude": [
+        "build"
+      ]
+    }
+  },
+  "test": {
+    "files": {
+      "include": [
+        "test"
+      ]
+    }
+  }
+}

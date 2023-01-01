@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\t\n'
+
+exit_with_message() {
+  local message
+  message="${1:-An error occurred}"
+  local exit_code
+  exit_code="${2:-1}"
+
+  echo "${message}" >&2
+  exit "${exit_code}"
+}
+
+# run docker or podman
+docker_() {
+  local docker_cmd
+  if command -v docker &>/dev/null; then
+    docker_cmd="docker"
+  elif command -v podman &>/dev/null; then
+    docker_cmd="podman"
+  else
+    exit_with_message "Neither docker nor podman found"
+  fi
+
+  "${docker_cmd}" "$@"
+}
+
+main() {
+  local current_dir
+  current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+  local image_name
+  image_name="yoga-wasm-build-tools:latest"
+
+  # build the image
+  docker_ build -t "${image_name}" .
+
+  # run the image, mounting the current directory as /app
+  docker_ run --rm -u "$(id -u):$(id -g)" -v "${current_dir}:/app" -w "/app" "${image_name}" make "$@"
+}
+
+main "$@"
