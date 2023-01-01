@@ -1,17 +1,17 @@
 import { Yoga } from "../mod.ts";
-import { assertEquals } from "https://deno.land/std@0.156.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.170.0/testing/asserts.ts";
 
 Deno.test("layout", () => {
-  const root = Yoga.Node.create();
+  const root = Yoga.Node.createDefault();
   root.setWidth(100);
   root.setHeight(100);
 
-  const child0 = Yoga.Node.create();
+  const child0 = Yoga.Node.createDefault();
   child0.setWidth(10);
   child0.setHeight(10);
   root.insertChild(child0, 0);
 
-  const child1 = Yoga.Node.create();
+  const child1 = Yoga.Node.createDefault();
   child1.setWidth(10);
   child1.setHeight(10);
   root.insertChild(child1, 1);
@@ -27,8 +27,8 @@ Deno.test("layout", () => {
   const expected = {
     child0Left: 0,
     child0Top: 0,
-    child1Left: 80,
-    child1Top: 0,
+    child1Left: 0,
+    child1Top: 10,
   };
 
   assertEquals(actual, expected);

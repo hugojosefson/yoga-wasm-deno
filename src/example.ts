@@ -1,16 +1,16 @@
 // import { Yoga } from "https://deno.land/x/yoga_wasm/mod.ts";
 import { Yoga } from "../mod.ts";
 
-const root = Yoga.Node.create();
+const root = Yoga.Node.createDefault();
 root.setWidth(100);
 root.setHeight(100);
 
-const child0 = Yoga.Node.create();
+const child0 = Yoga.Node.createDefault();
 child0.setWidth(10);
 child0.setHeight(10);
 root.insertChild(child0, 0);
 
-const child1 = Yoga.Node.create();
+const child1 = Yoga.Node.createDefault();
 child1.setWidth(10);
 child1.setHeight(10);
 root.insertChild(child1, 1);
@@ -26,4 +26,4 @@ const actual = { child0Left, child0Top, child1Left, child1Top };
 console.log(actual);
 
 // Output:
-// { child0Left: 0, child0Top: 0, child1Left: 80, child1Top: 0 }
+// { child0Left: 0, child0Top: 0, child1Left: 0, child1Top: 10 }

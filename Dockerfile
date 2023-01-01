@@ -8,3 +8,4 @@ RUN  apt-get update && apt-get install -y \
 RUN apt-get install -y git
 RUN apt-get install -y default-jre-headless
 RUN apt-get install -y bsdextrautils
+RUN apt-get install -y emscripten
