@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This script runs a command in a docker container, so that you don't need to install
-# the build tools on your host machine. It will mount the current directory as
-# /app in the container, and run your command from there.
+# This script runs a command in a docker container, so that you don't need to
+# install the build tools on your host machine. It will mount the current
+# directory as the same directory in the container, as your current user, and
+# run your command from there.
 
 set -euo pipefail
 IFS=$'\t\n'
