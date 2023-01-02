@@ -2,7 +2,7 @@
 
 ## Build the Yoga library
 default: all
- 
+
 ## Build all the generated files, and run tests
 all: dist/LICENSE dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts test
 
