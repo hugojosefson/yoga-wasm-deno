@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+
+# This script runs a command in a docker container, so that you don't need to install
+# the build tools on your host machine. It will mount the current directory as
+# /app in the container, and run your command from there.
+
+set -euo pipefail
+IFS=$'\t\n'
+
+current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+cd "${current_dir}"
+image_name="yoga-wasm-build-tools:latest"
+
+exit_with_message() {
+  local message
+  message="${1:-An error occurred}"
+  local exit_code
+  exit_code="${2:-1}"
+
+  echo "${message}" >&2
+  exit "${exit_code}"
+}
+
+# run docker or podman
+docker() {
+  local docker_cmd
+  if command -v docker &>/dev/null; then
+    docker_cmd="docker"
+  elif command -v podman &>/dev/null; then
+    docker_cmd="podman"
+  else
+    exit_with_message "Neither docker nor podman found"
+  fi
+
+  command "${docker_cmd}" "$@"
+}
+
+# run jq, possibly in a container
+jq() {
+  if command -v jq &>/dev/null; then
+    command jq "$@"
+  else
+    docker run --rm -i docker.io/library/jq "$@"
+  fi
+}
+
+latest_nvm_version() {
+  curl --fail --silent "https://api.github.com/repos/nvm-sh/nvm/releases/latest" |
+    jq -r .tag_name
+}
+
+latest_nvm_node_version() {
+  curl --fail --silent https://nodejs.org/dist/index.json |
+    jq -r .[0].version |
+    sed -E 's/^v//'
+}
+
+latest_npm_version() {
+  docker run --rm -i docker.io/node npm show npm@latest version
+}
+
+latest_yarn_version() {
+  docker run --rm -i docker.io/node npm show yarn@latest version
+}
+
+latest_deno_version() {
+  curl --fail --silent "https://api.github.com/repos/denoland/deno/releases/latest" |
+    jq -r .tag_name
+}
+
+latest_closure_compiler_version() {
+  curl --fail --silent "https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/maven-metadata.xml" |
+    grep -oP '(?<=<release>)[^<]*(?=</release>)'
+}
+
+build_image() {
+  NVM_VERSION="${NVM_VERSION:-$(latest_nvm_version)}"
+  NODE_VERSION="${NODE_VERSION:-$(latest_nvm_node_version)}"
+  NPM_VERSION="${NPM_VERSION:-$(latest_npm_version)}"
+  YARN_VERSION="${YARN_VERSION:-$(latest_yarn_version)}"
+  DENO_VERSION="${DENO_VERSION:-$(latest_deno_version)}"
+  CLOSURE_COMPILER_VERSION="${CLOSURE_COMPILER_VERSION:-v20221102}"
+
+  NPM_VERSION="${NPM_VERSION//$'\015'/}"
+  YARN_VERSION="${YARN_VERSION//$'\015'/}"
+
+  docker build \
+    --build-arg NVM_VERSION="${NVM_VERSION}" \
+    --build-arg NODE_VERSION="${NODE_VERSION}" \
+    --build-arg NPM_VERSION="${NPM_VERSION}" \
+    --build-arg YARN_VERSION="${YARN_VERSION}" \
+    --build-arg DENO_VERSION="${DENO_VERSION}" \
+    --build-arg CLOSURE_COMPILER_VERSION="${CLOSURE_COMPILER_VERSION}" \
+    --tag "${image_name}" \
+    .
+}
+
+main() {
+  # build the image
+  build_image
+
+  # run with a tty, if we're attached to a terminal
+  local interactivity_flag
+  if [[ -t 1 ]]; then
+    interactivity_flag="-it"
+  else
+    interactivity_flag="-i"
+  fi
+
+  # run the image, mounting the current directory
+  docker run \
+    --rm \
+    "${interactivity_flag}" \
+    --env="USER_ID=$(id -u)" \
+    --env="GROUP_ID=$(id -g)" \
+    --env="USER_NAME=$(id -un)" \
+    --env="GROUP_NAME=$(id -gn)" \
+    --env="HOME=${HOME}" \
+    -v "${current_dir}:${current_dir}" \
+    -w "${current_dir}" \
+    "${image_name}" \
+    "$@"
+}
+
+main "$@"

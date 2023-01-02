@@ -1,10 +1,10 @@
-.PHONY: default clean all help
+.PHONY: default clean all help build/yoga/javascript/.babelrc.js
 
 ## Build the Yoga library
-default: dist/yoga.js
-
+default: all
+ 
 ## Build all the generated files
-all: dist/yoga.js
+all: dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
 
 ## Delete all generated files
 clean:
@@ -17,8 +17,11 @@ build/:
 dist/:
 	mkdir -p dist
 
+dist/generated/:
+	mkdir -p dist/generated
+
 ## Run tests
-test: $(wildcard test/*) dist/yoga.js
+test: $(wildcard test/*) mod.ts dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
 	deno test
 
 ## Check out the Yoga library source code
@@ -50,3 +53,29 @@ build/yoga.js: build/ build/yoga/
 dist/yoga.js: dist/ build/yoga.js
 	cp build/yoga.js dist/yoga.js
 	deno fmt dist/yoga.js
+
+build/yoga/javascript/dist/index.d.ts: build/yoga/javascript/.babelrc.js
+	cd build/yoga/javascript && node --version && yarn && yarn build
+
+dist/yoga.d.ts: dist/ build/yoga/javascript/src_js/index.d.ts
+	cp build/yoga/javascript/src_js/index.d.ts dist/yoga.d.ts
+	deno fmt dist/yoga.d.ts
+	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/yoga.d.ts
+	sed -r 's/export function loadYoga/export default function loadYoga/g' -i dist/yoga.d.ts
+	echo "export type { Yoga };" >> dist/yoga.d.ts
+	deno fmt dist/yoga.d.ts
+
+dist/wrapAsm.d.ts: dist/ build/yoga/javascript/src_js/wrapAsm.d.ts
+	cp build/yoga/javascript/src_js/wrapAsm.d.ts dist/
+	deno fmt dist/wrapAsm.d.ts
+	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/wrapAsm.d.ts
+	deno fmt dist/wrapAsm.d.ts
+
+dist/generated/YGEnums.d.ts: dist/generated/ build/yoga/javascript/src_js/generated/YGEnums.d.ts
+	cp build/yoga/javascript/src_js/generated/YGEnums.d.ts dist/generated/
+	deno fmt dist/generated/YGEnums.d.ts
+	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/generated/YGEnums.d.ts
+	deno fmt dist/generated/YGEnums.d.ts
+
+build/yoga/javascript/.babelrc.js: build/yoga/ src/babelrc.js
+	cp src/babelrc.js build/yoga/javascript/.babelrc.js
