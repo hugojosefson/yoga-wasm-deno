@@ -11,7 +11,7 @@ import { Yoga } from "https://deno.land/x/yoga_wasm/mod.ts";
 
 ### Example
 
-See [./src/example.ts](./src/example.ts).
+See [./src/example.ts](https://deno.land/x/yoga_wasm/src/example.ts?source).
 
 ```bash
 deno run https://deno.land/x/yoga_wasm/src/example.ts
