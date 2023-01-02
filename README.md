@@ -42,3 +42,11 @@ Outputs:
 ```bash
 ./make-in-container test
 ```
+
+## License
+
+Build scripts and example code in other directories than `./dist`, are MIT
+licensed, see [LICENSE](https://deno.land/x/yoga_wasm/LICENSE?source).
+
+Yoga files in `./dist` directory are licensed under the MIT license, see
+[LICENSE](https://deno.land/x/yoga_wasm/dist/LICENSE?source).
