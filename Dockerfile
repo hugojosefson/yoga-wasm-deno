@@ -2,26 +2,22 @@ FROM ubuntu:22.04
 LABEL maintainer="Hugo Josefson <hugo@josefson.org> (https://www.hugojosefson.com/)"
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN  apt-get update \
+RUN apt-get update \
     && apt-get install -y apt-utils \
-    && apt-get dist-upgrade --purge -y \
-    && apt-get autoremove --purge -y \
-    && apt-get install -y \
-    curl                   $(: 'required by these setup scripts') \
-    wget                   $(: 'required by these setup scripts') \
-    jq                     $(: 'required by these setup scripts') \
-    gosu                   $(: 'for better process signalling in docker') \
-    sudo                   $(: 'useful') \
-    neovim                 $(: 'useful') \
-    unzip                  $(: 'required by deno install.sh')
+    && apt-get full-upgrade --purge -y \
+    && apt-get autoremove --purge -y
 
 RUN apt-get install -y build-essential
-RUN apt-get install -y git
-RUN apt-get install -y default-jre-headless
-RUN apt-get install -y bsdextrautils
-RUN apt-get install -y emscripten
+RUN apt-get install -y bsdextrautils         # `column` command, for `make help`
+RUN apt-get install -y default-jre-headless  # `java` command, for `closure-compiler`
+RUN apt-get install -y gosu                  # for /entrypoint.sh
+RUN apt-get install -y emscripten            # `emcc` command, for compiling to WebAssembly
+RUN apt-get install -y git                   # for `git clone`:ing yoga source code
 RUN apt-get install -y curl
 RUN apt-get install -y wget
+RUN apt-get install -y sudo
+RUN apt-get install -y tree
+RUN apt-get install -y neovim
 
 ARG NVM_VERSION
 ARG NODE_VERSION
@@ -58,6 +54,7 @@ RUN . "${NVM_DIR}/nvm.sh" && nvm use default
 COPY src/container-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
+
 CMD [ "bash" ]
 RUN apt-get install -y cmake
 COPY src/closure-compiler* /usr/local/bin/
