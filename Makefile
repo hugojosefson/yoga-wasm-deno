@@ -4,7 +4,7 @@
 default: all
  
 ## Build all the generated files
-all: dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
+all: dist/LICENSE dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
 
 ## Delete all generated files
 clean:
@@ -31,6 +31,9 @@ build/yoga/: build/
 ## List all the targets with descriptions
 help:
 	@awk '/^#/{c=substr($$0,3);next}c&&/^[[:alpha:]][[:alnum:]_-]+:/{print substr($$1,1,index($$1,":")),c}1{c=0}' $(MAKEFILE_LIST) | column -s: -t
+
+dist/LICENSE: dist/ build/yoga/ build/yoga/LICENSE
+	cp build/yoga/LICENSE dist/LICENSE
 
 build/yoga.js: build/ build/yoga/
 	cd build/yoga && emcc yoga/*.cpp javascript/src_native/*.cc \

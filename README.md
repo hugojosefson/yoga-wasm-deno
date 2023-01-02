@@ -1,7 +1,7 @@
-# yoga-wasm-deno
+# yoga_wasm for Deno
 
-Building [Yoga](https://github.com/facebook/yoga) Flexbox layout engine for
-WebAssembly and running it in [Deno](https://deno.land/).
+A WebAssembly build of [Yoga](https://github.com/facebook/yoga) Flexbox layout
+engine, for [Deno](https://deno.land/).
 
 ## Usage
 
