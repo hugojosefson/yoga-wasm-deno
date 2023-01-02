@@ -29,7 +29,7 @@ fi
 useradd \
   --uid "${USER_ID}" \
   --gid "${GROUP_ID}" \
-  --groups nvm,video \
+  --groups video \
   ${CREATE_HOME} \
   --home-dir "${HOME}" \
   "${USER_NAME}"
@@ -48,9 +48,6 @@ mkdir -p "${HOME}/.cache"
 chown -R "${USER_ID}:${GROUP_ID}" "${XDG_RUNTIME_DIR}"
 chown -R "${USER_ID}:${GROUP_ID}" "${HOME}/.config"
 chown -R "${USER_ID}:${GROUP_ID}" "${HOME}/.cache"
-
-# shellcheck disable=SC1091
-. /opt/nvm/nvm.sh
 
 XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR}" \
   exec gosu "${USER_ID}:${GROUP_ID}" "$@"

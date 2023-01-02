@@ -44,53 +44,16 @@ jq() {
   fi
 }
 
-latest_nvm_version() {
-  curl --fail --silent "https://api.github.com/repos/nvm-sh/nvm/releases/latest" |
-    jq -r .tag_name
-}
-
-latest_nvm_node_version() {
-  curl --fail --silent https://nodejs.org/dist/index.json |
-    jq -r .[0].version |
-    sed -E 's/^v//'
-}
-
-latest_npm_version() {
-  docker run --rm -i docker.io/node npm show npm@latest version
-}
-
-latest_yarn_version() {
-  docker run --rm -i docker.io/node npm show yarn@latest version
-}
-
 latest_deno_version() {
   curl --fail --silent "https://api.github.com/repos/denoland/deno/releases/latest" |
     jq -r .tag_name
 }
 
-latest_closure_compiler_version() {
-  curl --fail --silent "https://repo1.maven.org/maven2/com/google/javascript/closure-compiler/maven-metadata.xml" |
-    grep -oP '(?<=<release>)[^<]*(?=</release>)'
-}
-
 build_image() {
-  NVM_VERSION="${NVM_VERSION:-$(latest_nvm_version)}"
-  NODE_VERSION="${NODE_VERSION:-$(latest_nvm_node_version)}"
-  NPM_VERSION="${NPM_VERSION:-$(latest_npm_version)}"
-  YARN_VERSION="${YARN_VERSION:-$(latest_yarn_version)}"
   DENO_VERSION="${DENO_VERSION:-$(latest_deno_version)}"
-  CLOSURE_COMPILER_VERSION="${CLOSURE_COMPILER_VERSION:-v20221102}"
-
-  NPM_VERSION="${NPM_VERSION//$'\015'/}"
-  YARN_VERSION="${YARN_VERSION//$'\015'/}"
 
   docker build \
-    --build-arg NVM_VERSION="${NVM_VERSION}" \
-    --build-arg NODE_VERSION="${NODE_VERSION}" \
-    --build-arg NPM_VERSION="${NPM_VERSION}" \
-    --build-arg YARN_VERSION="${YARN_VERSION}" \
     --build-arg DENO_VERSION="${DENO_VERSION}" \
-    --build-arg CLOSURE_COMPILER_VERSION="${CLOSURE_COMPILER_VERSION}" \
     --tag "${image_name}" \
     .
 }

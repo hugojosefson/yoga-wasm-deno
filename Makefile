@@ -57,9 +57,6 @@ dist/yoga.js: dist/ build/yoga.js
 	cp build/yoga.js dist/yoga.js
 	deno fmt dist/yoga.js
 
-build/yoga/javascript/dist/index.d.ts: build/yoga/javascript/.babelrc.js
-	cd build/yoga/javascript && node --version && yarn && yarn build
-
 dist/yoga.d.ts: dist/ build/yoga/javascript/src_js/index.d.ts
 	cp build/yoga/javascript/src_js/index.d.ts dist/yoga.d.ts
 	deno fmt dist/yoga.d.ts
