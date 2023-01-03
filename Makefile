@@ -1,10 +1,10 @@
-.PHONY: default clean all help build/yoga/javascript/.babelrc.js build/yoga/.git
+.PHONY: default clean all help build/flex/.git
 
-## Build the Yoga library
+## Build the Flex library
 default: all
 
 ## Build all the generated files, and run tests
-all: dist/LICENSE dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts test
+all: dist/LICENSE dist/flex.js dist/flex.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts test
 
 ## Delete all generated files
 clean:
@@ -21,67 +21,48 @@ dist/generated/:
 	mkdir -p dist/generated
 
 ## Run tests
-test: $(wildcard test/*) mod.ts dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
+test: $(wildcard test/*) mod.ts dist/flex.js dist/flex.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
 	deno test
 
-# declare the version of yoga to checkout:
-YOGA_GIT_URL = "https://github.com/facebook/yoga.git"
-YOGA_GIT_VERSION = "c3291912b34568d671526cc0c21185023d3df2c5"
+# declare the version of flex to checkout:
+FLEX_GIT_URL = "https://github.com/jordwalke/flex.git"
+FLEX_GIT_VERSION = "6ff12fe"
 
-## Check out the Yoga library source code
-build/yoga/.git: build/ Makefile
-	( cd build/yoga && [ "$$(git config --get remote.origin.url)" = $(YOGA_GIT_URL) ] && git checkout --force $(YOGA_GIT_VERSION) ) || ( cd build && rm -rf yoga && git clone $(YOGA_GIT_URL) yoga && cd yoga && git checkout --force $(YOGA_GIT_VERSION) )
+## Check out the Flex library source code
+build/flex/.git: build/ Makefile
+	( cd build/flex && [ "$$(git config --get remote.origin.url)" = $(FLEX_GIT_URL) ] && git checkout --force $(FLEX_GIT_VERSION) ) || ( cd build && rm -rf flex && git clone $(FLEX_GIT_URL) flex && cd flex && git checkout --force $(FLEX_GIT_VERSION) )
 
 ## List all the targets with descriptions
 help:
 	@awk '/^#/{c=substr($$0,3);next}c&&/^[[:alpha:]][[:alnum:]_-]+:/{print substr($$1,1,index($$1,":")),c}1{c=0}' $(MAKEFILE_LIST) | column -s: -t
 
-dist/LICENSE: dist/ build/yoga/.git build/yoga/LICENSE
-	cp build/yoga/LICENSE dist/LICENSE
+dist/LICENSE: dist/ build/flex/.git build/flex/LICENSE
+	cp build/flex/LICENSE dist/LICENSE
 
-build/yoga.js: build/ build/yoga/.git
-	cd build/yoga && emcc yoga/*.cpp javascript/src_native/*.cc \
-		--bind -O0 --memory-init-file 0 \
-		-I. \
-		-s "DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['malloc','free','strlen']" \
-		-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
-		-s ALLOW_MEMORY_GROWTH=1 \
-		-s ASSERTIONS=0 \
-		-s DISABLE_EXCEPTION_CATCHING=1 \
-		-s LLD_REPORT_UNDEFINED \
-		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
-		-s EXPORT_ES6=1 \
-		--no-entry \
-		-s NO_EXIT_RUNTIME=1 \
-		-s WASM_ASYNC_COMPILATION=1 \
-		-s EXPORT_NAME=Yoga \
-		-s MODULARIZE=1 \
-		-s SINGLE_FILE=1 \
-		-o ../yoga.js
+build/flex.js: build/ build/flex/.git
+	cd build/flex && esy install
+	cd build/flex && esy build
 
-dist/yoga.js: dist/ build/yoga.js
-	cp build/yoga.js dist/yoga.js
-	deno fmt dist/yoga.js
+dist/flex.js: dist/ build/flex.js
+	cp build/flex.js dist/flex.js
+	deno fmt dist/flex.js
 
-dist/yoga.d.ts: dist/ build/yoga/javascript/src_js/index.d.ts
-	cp build/yoga/javascript/src_js/index.d.ts dist/yoga.d.ts
-	deno fmt dist/yoga.d.ts
-	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/yoga.d.ts
-	sed -r 's/export function loadYoga/export default function loadYoga/g' -i dist/yoga.d.ts
-	echo "export type { Yoga };" >> dist/yoga.d.ts
-	deno fmt dist/yoga.d.ts
+dist/flex.d.ts: dist/ build/flex/javascript/src_js/index.d.ts
+	cp build/flex/javascript/src_js/index.d.ts dist/flex.d.ts
+	deno fmt dist/flex.d.ts
+	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/flex.d.ts
+	sed -r 's/export function loadFlex/export default function loadFlex/g' -i dist/flex.d.ts
+	echo "export type { Flex };" >> dist/flex.d.ts
+	deno fmt dist/flex.d.ts
 
-dist/wrapAsm.d.ts: dist/ build/yoga/javascript/src_js/wrapAsm.d.ts
-	cp build/yoga/javascript/src_js/wrapAsm.d.ts dist/
+dist/wrapAsm.d.ts: dist/ build/flex/javascript/src_js/wrapAsm.d.ts
+	cp build/flex/javascript/src_js/wrapAsm.d.ts dist/
 	deno fmt dist/wrapAsm.d.ts
 	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/wrapAsm.d.ts
 	deno fmt dist/wrapAsm.d.ts
 
-dist/generated/YGEnums.d.ts: dist/generated/ build/yoga/javascript/src_js/generated/YGEnums.d.ts
-	cp build/yoga/javascript/src_js/generated/YGEnums.d.ts dist/generated/
+dist/generated/YGEnums.d.ts: dist/generated/ build/flex/javascript/src_js/generated/YGEnums.d.ts
+	cp build/flex/javascript/src_js/generated/YGEnums.d.ts dist/generated/
 	deno fmt dist/generated/YGEnums.d.ts
 	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/generated/YGEnums.d.ts
 	deno fmt dist/generated/YGEnums.d.ts
-
-build/yoga/javascript/.babelrc.js: build/yoga/.git src/babelrc.js
-	cp src/babelrc.js build/yoga/javascript/.babelrc.js
