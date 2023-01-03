@@ -48,6 +48,7 @@ build/yoga.js: build/ build/yoga/.git
 		-s ALLOW_MEMORY_GROWTH=1 \
 		-s ASSERTIONS=0 \
 		-s DISABLE_EXCEPTION_CATCHING=1 \
+		-s LLD_REPORT_UNDEFINED \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		-s EXPORT_ES6=1 \
 		-s NO_EXIT_RUNTIME=1 \
