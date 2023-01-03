@@ -1,4 +1,4 @@
-.PHONY: default clean all help build/yoga/javascript/.babelrc.js
+.PHONY: default clean all help build/yoga/javascript/.babelrc.js build/yoga/.git
 
 ## Build the Yoga library
 default: all
@@ -24,18 +24,22 @@ dist/generated/:
 test: $(wildcard test/*) mod.ts dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
 	deno test
 
+# declare the version of yoga to checkout:
+YOGA_GIT_URL = "https://github.com/facebook/yoga.git"
+YOGA_GIT_VERSION = "c3291912b34568d671526cc0c21185023d3df2c5"
+
 ## Check out the Yoga library source code
-build/yoga/: build/
-	cd build/yoga && git checkout --force c3291912b34568d671526cc0c21185023d3df2c5 || ( cd build && rm -rf yoga && git clone https://github.com/facebook/yoga.git )
+build/yoga/.git: build/ Makefile
+	( cd build/yoga && [ "$$(git config --get remote.origin.url)" = $(YOGA_GIT_URL) ] && git checkout --force $(YOGA_GIT_VERSION) ) || ( cd build && rm -rf yoga && git clone $(YOGA_GIT_URL) yoga && cd yoga && git checkout --force $(YOGA_GIT_VERSION) )
 
 ## List all the targets with descriptions
 help:
 	@awk '/^#/{c=substr($$0,3);next}c&&/^[[:alpha:]][[:alnum:]_-]+:/{print substr($$1,1,index($$1,":")),c}1{c=0}' $(MAKEFILE_LIST) | column -s: -t
 
-dist/LICENSE: dist/ build/yoga/ build/yoga/LICENSE
+dist/LICENSE: dist/ build/yoga/.git build/yoga/LICENSE
 	cp build/yoga/LICENSE dist/LICENSE
 
-build/yoga.js: build/ build/yoga/
+build/yoga.js: build/ build/yoga/.git
 	cd build/yoga && emcc yoga/*.cpp javascript/src_native/*.cc \
 		--bind -O0 --memory-init-file 0 --llvm-lto 1 \
 		-I. \
@@ -77,5 +81,5 @@ dist/generated/YGEnums.d.ts: dist/generated/ build/yoga/javascript/src_js/genera
 	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/generated/YGEnums.d.ts
 	deno fmt dist/generated/YGEnums.d.ts
 
-build/yoga/javascript/.babelrc.js: build/yoga/ src/babelrc.js
+build/yoga/javascript/.babelrc.js: build/yoga/.git src/babelrc.js
 	cp src/babelrc.js build/yoga/javascript/.babelrc.js
