@@ -1,4 +1,4 @@
-.PHONY: default clean all help build/yoga/javascript/.babelrc.js build/yoga/.git
+.PHONY: default clean all help build/yoga/javascript/.babelrc.js build/yoga/.git build/nbind/.git
 
 ## Build the Yoga library
 default: all
@@ -24,12 +24,20 @@ dist/generated/:
 test: $(wildcard test/*) mod.ts dist/yoga.js dist/yoga.d.ts dist/wrapAsm.d.ts dist/generated/YGEnums.d.ts
 	deno test
 
+# declare the version of nbind to checkout:
+NBIND_GIT_URL = "https://github.com/charto/nbind.git"
+NBIND_GIT_VERSION = "fe3abe05462d1b7559e0933e7f83802e8f05af27"
+
 # declare the version of yoga to checkout:
 YOGA_GIT_URL = "https://github.com/facebook/yoga.git"
 YOGA_GIT_VERSION = "c3291912b34568d671526cc0c21185023d3df2c5"
 
+## Checkout the nbind library
+build/nbind/.git: build/ Makefile
+	( cd build/nbind && [ "$$(git config --get remote.origin.url)" = $(NBIND_GIT_URL) ] && git checkout --force $(NBIND_GIT_VERSION) ) || ( cd build && rm -rf nbind && git clone $(NBIND_GIT_URL) nbind && cd nbind && git checkout --force $(NBIND_GIT_VERSION) )
+
 ## Check out the Yoga library source code
-build/yoga/.git: build/ Makefile
+build/yoga/.git: build/ Makefile build/nbind/.git
 	( cd build/yoga && [ "$$(git config --get remote.origin.url)" = $(YOGA_GIT_URL) ] && git checkout --force $(YOGA_GIT_VERSION) ) || ( cd build && rm -rf yoga && git clone $(YOGA_GIT_URL) yoga && cd yoga && git checkout --force $(YOGA_GIT_VERSION) )
 
 ## List all the targets with descriptions
@@ -43,6 +51,7 @@ build/yoga.js: build/ build/yoga/.git
 	cd build/yoga && emcc yoga/*.cpp javascript/src_native/*.cc \
 		--bind -O0 --memory-init-file 0 \
 		-I. \
+		-I../nbind/include \
 		-s "DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['malloc','free','strlen']" \
 		-s AGGRESSIVE_VARIABLE_ELIMINATION=0 \
 		-s ALLOW_MEMORY_GROWTH=1 \
