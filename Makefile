@@ -51,6 +51,7 @@ build/yoga.js: build/ build/yoga/.git
 		-s LLD_REPORT_UNDEFINED \
 		-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 		-s EXPORT_ES6=1 \
+		--no-entry \
 		-s NO_EXIT_RUNTIME=1 \
 		-s WASM_ASYNC_COMPILATION=1 \
 		-s EXPORT_NAME=Yoga \
