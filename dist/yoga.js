@@ -4158,18 +4158,6 @@ var Yoga = (() => {
         return 0;
       }
 
-      /** @type {function(...*):?} */
-      function _memcpy() {
-        err("missing function: memcpy");
-        abort(-1);
-      }
-
-      /** @type {function(...*):?} */
-      function _memset() {
-        err("missing function: memset");
-        abort(-1);
-      }
-
       function _setTempRet0(val) {
         setTempRet0(val);
       }

@@ -43,7 +43,7 @@ build/yoga.js: build/ build/yoga/.git
 	cd build/yoga && emcc yoga/*.cpp javascript/src_native/*.cc \
 		--bind -O0 --memory-init-file 0 \
 		-I. \
-		-s "DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['memcpy','memset','malloc','free','strlen']" \
+		-s "DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['malloc','free','strlen']" \
 		-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
 		-s ALLOW_MEMORY_GROWTH=1 \
 		-s ASSERTIONS=0 \
