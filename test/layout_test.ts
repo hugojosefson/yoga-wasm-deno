@@ -1,116 +1,91 @@
-import { Node, Yoga } from "../mod.ts";
-import { assertEquals } from "https://deno.land/std@0.170.0/testing/asserts.ts";
+import { Container, Node } from "npm:@welefen/grid-layout";
 import {
-  drawBorder,
-  moveCursorTo,
-  placeAt,
-} from "../src/primitives.ts";
+  BoundingRect,
+  ContainerBoundingRect,
+} from "npm:@welefen/grid-layout/lib/util/config.d.ts";
+import { assertEquals } from "https://deno.land/std@0.170.0/testing/asserts.ts";
+import { drawBorder, moveCursorTo, placeAt } from "../src/primitives.ts";
 
-type Layout = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-  width: number;
-  height: number;
-};
-
-interface Layouts {
-  root: Layout;
-  children: Layout[];
-}
-
-function drawLayout(layout: Layout, text: string, yOffset = 0): string {
+function drawLayout(layout: BoundingRect, text: string, yOffset = 0): string {
   return drawBorder(
     {
-      width: layout.width * 2,
-      height: layout.height,
-      x: layout.left * 2,
-      y: layout.top + 1 + yOffset,
+      width: layout.width! * 2,
+      height: layout.height!,
+      x: layout.left! * 2,
+      y: layout.top! + 1 + yOffset,
     },
     text,
   );
 }
 
-function appendChild(parent: Node, child: Node): void {
-  parent.insertChild(child, parent.getChildCount());
-}
-
 Deno.test("layout", () => {
-  const root = Yoga.Node.createDefault();
-  root.setWidth(50);
-  root.setHeight(30);
-  root.setJustifyContent(Yoga.JUSTIFY_CENTER);
-  root.setFlexDirection(Yoga.FLEX_DIRECTION_ROW);
+  const marginTop = 2;
 
-  const nav = Yoga.Node.createDefault();
-  nav.setWidth(10);
-  nav.setHeight(10);
+  const root = new Container({
+    width: 50,
+    height: 30,
+    justifyItems: "center",
+    gridTemplateColumns: "1fr 1fr",
+  });
 
-
-  const article = Yoga.Node.createDefault();
-  article.setWidth(10);
-  article.setHeight(10);
-
-  const childNames = ["nav", "article"];
-  appendChild(root, nav);
-  appendChild(root, article);
-
-  root.calculateLayout(50, 30, Yoga.DIRECTION_LTR);
-
-  const actualLayouts: Layouts = {
-    root: root.getComputedLayout(),
-    children: [
-      nav.getComputedLayout(),
-      article.getComputedLayout(),
-    ],
+  const children: Record<string, Node> = {
+    nav: new Node({
+      width: 10,
+      height: 10,
+      marginTop,
+      marginLeft: "auto",
+    }),
+    article: new Node({
+      width: 10,
+      height: 10,
+      marginTop,
+      marginRight: "auto",
+    }),
   };
 
-  const expectedLayouts: Layouts = {
-    root: {
-      left: 0,
-      top: 0,
-      width: 50,
-      height: 30,
-      right: 0,
-      bottom: 0,
+  const childNames = Object.keys(children);
+  Object.values(children).forEach((child) => root.appendChild(child));
+
+  root.calculateLayout();
+  const actualLayouts: ContainerBoundingRect = root.getAllComputedLayout()!;
+  const actualChildren: BoundingRect[] = actualLayouts.children!;
+
+  const expectedChildren: BoundingRect[] = [
+    {
+      left: 15,
+      top: marginTop,
+      width: 10,
+      height: 10,
     },
-    children: [
-      {
-        left: 15,
-        top: 0,
-        width: 10,
-        height: 10,
-        right: 0,
-        bottom: 0,
-      },
-      {
-        left: 25,
-        top: 0,
-        width: 10,
-        height: 10,
-        right: 0,
-        bottom: 0,
-      },
-    ],
+    {
+      left: 25,
+      top: marginTop,
+      width: 10,
+      height: 10,
+    },
+  ];
+  const expectedLayouts: ContainerBoundingRect = {
+    left: 0,
+    top: 0,
+    width: 50,
+    height: 30,
+    children: expectedChildren,
   };
 
   const CLEAR_SCREEN = "\x1b[2J\x1b[3J\x1b[H";
   const output = [
     CLEAR_SCREEN,
     placeAt(["Actual:"], { x: 0, y: 0 }),
-    drawLayout(actualLayouts.root, "root", 1),
-    ...actualLayouts.children.map((layout, i) =>
-      drawLayout(layout, childNames[i], 1)
-    ),
-    placeAt(["Expected:"], { x: 0, y: actualLayouts.root.height + 3 }),
-    drawLayout(expectedLayouts.root, "root", actualLayouts.root.height + 3),
-    ...expectedLayouts.children.map((layout, i) =>
-      drawLayout(layout, childNames[i], actualLayouts.root.height + 3)
+    drawLayout(actualLayouts, "root", 1),
+    ...actualChildren.map((layout, i) => drawLayout(layout, childNames[i], 1)),
+    placeAt(["Expected:"], { x: 0, y: actualLayouts.height! + 3 }),
+    drawLayout(expectedLayouts, "root", actualLayouts.height! + 3),
+    ...expectedChildren.map((layout, i) =>
+      drawLayout(layout, childNames[i], actualLayouts.height! + 3)
     ),
     moveCursorTo({
       x: 0,
-      y: actualLayouts.root.height + 1 + expectedLayouts.root.height + 2,
+      y: actualLayouts.height! + 1 + expectedLayouts.height! + 2,
     }),
   ].join("");
   console.log(output);

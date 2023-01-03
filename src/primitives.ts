@@ -33,8 +33,15 @@ export function writeString(s: string) {
   writeBytes(encode(s));
 }
 
+function toInt(n: number): number {
+  const floored = Math.floor(n);
+  return Number.isNaN(floored) ? 0 : floored;
+}
+
 export function moveCursorTo(coordinates: Point): string {
-  return `\x1b[${coordinates.y};${coordinates.x}H`;
+  const xInt = toInt(coordinates.x);
+  const yInt = toInt(coordinates.y);
+  return `\x1b[${yInt};${xInt}H`;
 }
 
 /**
