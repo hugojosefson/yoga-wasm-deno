@@ -44,7 +44,7 @@ build/yoga.js: build/ build/yoga/.git
 		--bind -O0 --memory-init-file 0 \
 		-I. \
 		-s "DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['malloc','free','strlen']" \
-		-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
+		-s AGGRESSIVE_VARIABLE_ELIMINATION=0 \
 		-s ALLOW_MEMORY_GROWTH=1 \
 		-s ASSERTIONS=0 \
 		-s DISABLE_EXCEPTION_CATCHING=1 \
