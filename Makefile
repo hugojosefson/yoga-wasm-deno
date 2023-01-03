@@ -75,6 +75,7 @@ dist/wrapAsm.d.ts: dist/ build/yoga/javascript/src_js/wrapAsm.d.ts
 	cp build/yoga/javascript/src_js/wrapAsm.d.ts dist/
 	deno fmt dist/wrapAsm.d.ts
 	sed -r 's/from ["'"'"'](.*)["'"'"']/from "\1.d.ts"/g' -i dist/wrapAsm.d.ts
+	sed -r 's/setUseWebDefaults\(useWebDefaults\)/setUseWebDefaults(useWebDefaults: boolean)/g' -i dist/wrapAsm.d.ts
 	deno fmt dist/wrapAsm.d.ts
 
 dist/generated/YGEnums.d.ts: dist/generated/ build/yoga/javascript/src_js/generated/YGEnums.d.ts
